@@ -1,0 +1,36 @@
+{
+  "name": "@starbrix/i18n",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "bin": {
+    "i18n": "./dist/index.mjs"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test:dev": "vitest",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^25.1.0",
+    "@types/unzipper": "^0.10.11",
+    "googleapis": "^171.0.0",
+    "tsdown": "^0.18.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "lodash-es": "^4.17.23",
+    "picocolors": "^1.1.1",
+    "unzipper": "^0.12.3",
+    "zod": "^4.3.6"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+_test
+.temp/
+.env
+_local
