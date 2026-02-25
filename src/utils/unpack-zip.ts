@@ -41,18 +41,17 @@ export const unpackZip = async (zipFilePath: string): Promise<string> => {
   const outputDir = path.join(".temp", "unpacked")
   await createDirectory(outputDir)
 
-  const { error: unpackError } = await tryCatch(
-    fs
-      .createReadStream(zipFilePath)
-      .pipe(unzipper.Extract({ path: outputDir }))
-      .promise(),
-  )
+  const unpackPromise = async () => {
+    const directory = await unzipper.Open.file(zipFilePath)
+    await directory.extract({ path: outputDir })
+  }
+  const { error: unpackError } = await tryCatch(unpackPromise())
 
   if (unpackError) {
     return exitWithError(`Failed to unpack zip file: ${unpackError.message}`)
-  } else {
-    const unpackedTo = path.join(outputDir, baseName)
-    logger.info(`Unpacked ${relativePath(zipFilePath)} to ${unpackedTo}`)
-    return unpackedTo
   }
+
+  const unpackedTo = path.join(outputDir, baseName)
+  logger.info(`Unpacked ${relativePath(zipFilePath)} to ${unpackedTo}`)
+  return unpackedTo
 }
