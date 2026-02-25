@@ -19,6 +19,7 @@ const ArgsSchema = z.object({
   localesDir: z.string(),
   tempDir: z.string(),
   namespaced: z.boolean(),
+  deleteTempDir: z.boolean().optional().default(true),
 })
 
 const createValidArgs = async (args: any): Promise<Args> => {
@@ -44,8 +45,15 @@ const createHandoffFile = (pr: string) => `i18n-handoff-${pr}.zip`
 const createTranslatedFile = (pr: string) => `i18n-translation-${pr}.zip`
 
 export const handleSyncTranslations = async (args: any) => {
-  const { prNumber, context, tempDir, localesDir, namespaced, verbose } =
-    await createValidArgs(args)
+  const {
+    prNumber,
+    context,
+    tempDir,
+    localesDir,
+    namespaced,
+    verbose,
+    deleteTempDir,
+  } = await createValidArgs(args)
   const downloadsDir = path.join(tempDir, "downloads")
   const logger = createLogger(verbose)
 
@@ -91,9 +99,15 @@ export const handleSyncTranslations = async (args: any) => {
   await validateTranslations({ dir: localesDir, namespaced, verbose })
   logger.success(`Merged translations are consistent with handoff.\n`)
 
-  logger.info(`[6/6] Cleaning up temporary files...`)
-  rmRfDir(tempDir)
-  logger.success(`Temporary files cleaned up successfully.\n`)
+  if (deleteTempDir) {
+    logger.info(`[6/6] Cleaning up temporary files...`)
+    rmRfDir(tempDir)
+    logger.success(`Temporary files cleaned up successfully.\n`)
+  } else {
+    logger.info(
+      `[6/6] Temp files have not been deleted. Remember to clean up ${tempDir} manually when done.`,
+    )
+  }
 
   logger.success(`✅ Translations synced successfully for PR #${prNumber}!`)
 }

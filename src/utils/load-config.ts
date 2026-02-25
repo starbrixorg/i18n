@@ -46,6 +46,7 @@ const configSchema = z.object({
     tempDir: z.string(),
     context: z.enum(["ui", "api"]),
     namespaced: z.boolean(),
+    deleteTempDir: z.boolean().optional().default(true),
   }),
 })
 
