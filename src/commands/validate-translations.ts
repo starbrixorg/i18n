@@ -89,9 +89,8 @@ const validateFlatDirKeyConsistency = (args: Args): string[] => {
 
   const baseLocaleFilePath = path.join(baseLocaleDir, `${baseLocale}.json`)
   if (!isFile(baseLocaleFilePath)) {
-    exitWithError(
-      `Base locale file '${baseLocale}.json' not found in ${relativePath(baseLocaleDir)}`,
-    )
+    const error = `Base locale file '${baseLocale}.json' not found in ${relativePath(baseLocaleDir)}`
+    throw new Error(error)
   }
 
   const violations: string[] = []
@@ -140,9 +139,7 @@ const validateFlatDirKeyConsistency = (args: Args): string[] => {
 const validateNamespacedDirKeyConsistency = (args: Args): string[] => {
   const { dir, baseLocaleDir } = args
   if (typeof baseLocaleDir !== "string") {
-    return exitWithError(
-      "baseLocaleDir must be provided for namespaced validation.",
-    )
+    throw new Error("baseLocaleDir must be provided for namespaced validation.")
   }
   assertDirectoryExists(dir)
   assertDirectoryExists(baseLocaleDir)
@@ -254,19 +251,31 @@ const createValidArgs = async (args: any): Promise<Args> => {
   })
 }
 
-export const handleValidateTranslations = async (args: ArgMap) => {
-  const validArgs = await createValidArgs(args)
-  let violations: string[]
+export const validateTranslations = async (args: unknown) => {
+  try {
+    const validArgs = await createValidArgs(args)
+    let violations: string[]
 
-  if (validArgs.namespaced) {
-    violations = validateNamespacedDirKeyConsistency(validArgs)
-  } else {
-    violations = validateFlatDirKeyConsistency(validArgs)
+    if (validArgs.namespaced) {
+      violations = validateNamespacedDirKeyConsistency(validArgs)
+    } else {
+      violations = validateFlatDirKeyConsistency(validArgs)
+    }
+
+    if (violations.length) {
+      logger.error(`Validation failed with ${violations.length} violation(s).`)
+    } else {
+      logger.success(`All translation keys are consistent across locales.`)
+    }
+  } catch (error) {
+    throw error
   }
+}
 
-  if (violations.length) {
-    exitWithError(`Validation failed with ${violations.length} violation(s).`)
-  } else {
-    logger.success(`All translation keys are consistent across namespaces.`)
+export const handleValidateTranslations = async (args: ArgMap) => {
+  try {
+    await validateTranslations(args)
+  } catch (error) {
+    exitWithError((error as Error).message)
   }
 }

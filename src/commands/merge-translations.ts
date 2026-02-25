@@ -7,7 +7,7 @@ import {
   writeFileSync,
   getJsonFilesInDirectory,
 } from "../utils/io.ts"
-import { relativePath } from "../utils/utils.ts"
+import { exitWithError, relativePath } from "../utils/utils.ts"
 import { logger } from "../utils/logger.ts"
 import {
   getChangesSummary,
@@ -137,7 +137,7 @@ const createValidArgs = async (args: any): Promise<Args> => {
   })
 }
 
-export const handleMergeTranslations = async (args: unknown) => {
+export const mergeTranslations = async (args: unknown) => {
   const validArgs = await createValidArgs(args)
   const { patch, base, namespaced } = validArgs
 
@@ -163,5 +163,14 @@ export const handleMergeTranslations = async (args: unknown) => {
     mergeResults = Object.values(resultsByLocale)
   }
 
-  printMergeResults(mergeResults)
+  return mergeResults
+}
+
+export const handleMergeTranslations = async (args: unknown) => {
+  try {
+    const mergeResults = await mergeTranslations(args)
+    printMergeResults(mergeResults)
+  } catch (error) {
+    exitWithError(`Error merging translations: ${(error as Error).message}`)
+  }
 }

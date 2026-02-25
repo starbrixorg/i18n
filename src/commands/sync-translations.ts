@@ -3,8 +3,8 @@ import { downloadFromDrive } from "../utils/google-drive"
 import { createLogger } from "../utils/logger"
 import { unpackZip } from "../utils/unpack-zip"
 import path from "path"
-import { handleValidateTranslations } from "./validate-translations"
-import { handleMergeTranslations } from "./merge-translations"
+import { validateTranslations } from "./validate-translations"
+import { mergeTranslations } from "./merge-translations"
 import { rmRfDir } from "../utils/io"
 import { loadConfig } from "../utils/load-config"
 
@@ -70,7 +70,7 @@ export const handleSyncTranslations = async (args: any) => {
   logger.success(`Files extracted successfully.\n`)
 
   logger.info(`[3/6] Validating received translations...`)
-  await handleValidateTranslations({
+  await validateTranslations({
     dir: unpackedTranslatedPath,
     baseLocaleDir: namespaced
       ? path.join(unpackedHandoffPath, "en")
@@ -80,7 +80,7 @@ export const handleSyncTranslations = async (args: any) => {
   logger.success(`Received translations are consistent with handoff.\n`)
 
   logger.info(`[4/6] Syncing translations to the project...`)
-  await handleMergeTranslations({
+  await mergeTranslations({
     patch: unpackedTranslatedPath,
     base: localesDir,
     namespaced,
@@ -88,7 +88,7 @@ export const handleSyncTranslations = async (args: any) => {
   logger.success(`Translations merged successfully.\n`)
 
   logger.info(`[5/6] Validating merged translations...`)
-  await handleValidateTranslations({ dir: localesDir, namespaced, verbose })
+  await validateTranslations({ dir: localesDir, namespaced, verbose })
   logger.success(`Merged translations are consistent with handoff.\n`)
 
   logger.info(`[6/6] Cleaning up temporary files...`)
