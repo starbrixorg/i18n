@@ -41,7 +41,7 @@ const createValidArgs = async (args: any): Promise<Args> => {
 }
 
 const createHandoffFile = (pr: string) => `i18n-handoff-${pr}.zip`
-const createTranslatedFile = (pr: string) => `i18n-translated-${pr}.zip`
+const createTranslatedFile = (pr: string) => `i18n-translation-${pr}.zip`
 
 export const handleSyncTranslations = async (args: any) => {
   const { prNumber, context, tempDir, localesDir, namespaced, verbose } =
