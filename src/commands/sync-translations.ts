@@ -20,6 +20,7 @@ const ArgsSchema = z.object({
   tempDir: z.string(),
   namespaced: z.boolean(),
   deleteTempDir: z.boolean().optional().default(true),
+  skipValidation: z.boolean().optional().default(false),
 })
 
 const createValidArgs = async (args: any): Promise<Args> => {
@@ -53,6 +54,7 @@ export const handleSyncTranslations = async (args: any) => {
     namespaced,
     verbose,
     deleteTempDir,
+    skipValidation,
   } = await createValidArgs(args)
   const downloadsDir = path.join(tempDir, "downloads")
   const logger = createLogger(verbose)
@@ -77,15 +79,17 @@ export const handleSyncTranslations = async (args: any) => {
   const unpackedTranslatedPath = await unpackZip(translatedZipFilePath)
   logger.success(`Files extracted successfully.\n`)
 
-  logger.info(`[3/6] Validating received translations...`)
-  await validateTranslations({
-    dir: unpackedTranslatedPath,
-    baseLocaleDir: namespaced
-      ? path.join(unpackedHandoffPath, "en")
-      : unpackedHandoffPath,
-    namespaced,
-  })
-  logger.success(`Received translations are consistent with handoff.\n`)
+  if (!skipValidation) {
+    logger.info(`[3/6] Validating received translations...`)
+    await validateTranslations({
+      dir: unpackedTranslatedPath,
+      baseLocaleDir: namespaced
+        ? path.join(unpackedHandoffPath, "en")
+        : unpackedHandoffPath,
+      namespaced,
+    })
+    logger.success(`Received translations are consistent with handoff.\n`)
+  }
 
   logger.info(`[4/6] Syncing translations to the project...`)
   await mergeTranslations({
@@ -95,9 +99,11 @@ export const handleSyncTranslations = async (args: any) => {
   })
   logger.success(`Translations merged successfully.\n`)
 
-  logger.info(`[5/6] Validating merged translations...`)
-  await validateTranslations({ dir: localesDir, namespaced, verbose })
-  logger.success(`Merged translations are consistent with handoff.\n`)
+  if (!skipValidation) {
+    logger.info(`[5/6] Validating merged translations...`)
+    await validateTranslations({ dir: localesDir, namespaced, verbose })
+    logger.success(`Merged translations are consistent with handoff.\n`)
+  }
 
   if (deleteTempDir) {
     logger.info(`[6/6] Cleaning up temporary files...`)
