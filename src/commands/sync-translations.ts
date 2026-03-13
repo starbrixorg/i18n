@@ -116,4 +116,5 @@ export const handleSyncTranslations = async (args: any) => {
   }
 
   logger.success(`✅ Translations synced successfully for PR #${prNumber}!`)
+  logger.info("Remember to save new snapshot of translations")
 }
